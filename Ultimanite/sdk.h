@@ -416,6 +416,39 @@ namespace Building
 		ProcessEvent(BuildingActor, InitializeKismetSpawnedBuildingActor, &params);
 	}
 	
+	static void EnterEditMode(UObject* BuildingActorToEdit)
+	{
+	    static UObject* ServerBeginEditingBuildingActor = FindObject(L"Function /Script/FortniteGame.BuildingActor.ServerBeginEditingBuildingActor");
+	    
+		ProcessEvent(BuildingActorToEdit, ServerBeginEditingBuildingActor, BuildingActorToEdit);
+	}
+
+    static void EditBuildingActor(UObject* BuildingActorToEdit, UObject* NewBuildingClass, int RotationIterations, bool Mirrored)
+    {
+
+        struct Params
+        {
+            UObject* BuildingActorToEdit;
+            UObject* NewBuildingClass;
+            int RotationIterations;
+            bool Mirrored;
+        };
+
+        Params params;
+        params.BuildingActorToEdit = BuildingActorToEdit;
+        params.NewBuildingClass = NewBuildingClass;
+        params.RotationIterations = RotationIterations;
+        params.Mirrored = Mirrored;
+        static UObject* ServerEditBuildingActor = FindObject(L"Function /Script/FortniteGame.BuildingActor.ServerEditBuildingActor");
+
+        ProcessEvent(BuildingActorToEdit, ServerEditBuildingActor, &params);
+        auto NewBuildingActor = SpawnActorEasy(GetWorld(), (AActor*)(NewBuildingClass), AActor::GetLocation(BuildingActorToEdit), AActor::GetRotation(BuildingActorToEdit));
+
+        AActor::Destroy(BuildingActorToEdit);
+        InitializeBuildingActor(NewBuildingActor);
+
+    }
+	
 	static void K2_SetCurrentResourceType(UObject* Controller, EFortResourceType ResourceType)
 	{
 		static UObject* K2_SetCurrentResourceType = FindObject(L"Function /Script/FortniteGame.FortKismetLibrary.K2_SetCurrentResourceType");
@@ -497,6 +530,25 @@ namespace AActor
 
 		return Params.ret;
 	}
+
+    static auto K2_SetActorLocation(UObject* Target, FVector NewLocation)
+    {
+        static auto K2_SetActorLocation = FindObject(L"Function /Script/Engine.Actor.K2_SetActorLocation");
+
+        struct
+        {
+            FVector NewLocation;
+            bool bSweep; 
+            bool bTeleport; 
+
+        } Params;
+
+        Params.NewLocation = NewLocation;
+        Params.bSweep = false;
+        Params.bTeleport = false;
+
+        ProcessEvent(Target, K2_SetActorLocation, &Params);
+    }
 }
 
 //TODO: Move to a class for multiplayer.
