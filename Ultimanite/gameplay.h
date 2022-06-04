@@ -329,6 +329,26 @@ namespace Game
 				Building::InitializeBuildingActor(BuildingActor);
 			}
 
+             if (wcsstr(FunctionName.c_str(), L"ServerEditBuildingActor"))
+            {
+                struct ServerEditBuildingActor
+                {
+                    UObject* BuildingActorToEdit;
+                    UObject* NewBuildingClass;
+                    int RotationIterations;
+                    bool Mirrored;
+                }
+                auto CurrentParams = (ServerEditBuildingActor*)Params;
+
+
+                Building::EditBuildingActor(CurrentParams->BuildingActorToEdit, CurrentParams->NewBuildingClass, CurrentParams->RotationIterations, CurrentParams->Mirrored);
+            }
+
+            if (wcsstr(FunctionName.c_str(), L"ServerBeginEditingBuildingActor"))
+            {
+                Building::EnterEditMode((UObject*)Params);
+            }
+
 			if (wcsstr(FunctionName.c_str(), L"ServerAttemptInteract"))
 			{
 				struct ServerAttemptInteract
@@ -467,6 +487,8 @@ namespace Game
 					}
 				}
 			}
+
+           
 
 			if (wcsstr(FunctionName.c_str(), L"ServerLoadingScreenDropped"))
 			{
